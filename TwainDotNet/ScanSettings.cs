@@ -15,6 +15,11 @@ namespace TwainDotNet
         bool _showTwainUI;
 
         /// <summary>
+        /// The contrast values available within the Source. -1000~1000, default value is 0.
+        /// </summary>
+        public int Contrast = 0;
+
+        /// <summary>
         /// Indicates if the TWAIN/driver user interface should be used to pick the scan settings.
         /// </summary>
         public bool ShowTwainUI

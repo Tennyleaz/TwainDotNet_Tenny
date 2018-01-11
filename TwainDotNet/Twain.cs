@@ -73,8 +73,35 @@ namespace TwainDotNet
 
         public void Dispose()
         {
-            SourceNames.Clear();
+            //SourceNames.Clear();
             ((IDisposable)_dataSourceManager).Dispose();
+        }
+
+        /// <summary>
+        /// 偵測有沒有紙，需要先select一個data source。
+        /// </summary>
+        /// <returns></returns>
+        public bool IsPaperOn()
+        {
+            return _dataSourceManager.IsPaperOn();
+        }
+
+        /// <summary>
+        /// 校正A8，需要先select一個data source (A8)。
+        /// </summary>
+        /// <returns></returns>
+        public bool CalibrateA8()
+        {
+            return _dataSourceManager.CalibrateA8();
+        }
+
+        /// <summary>
+        /// A8是否需要校正，需要先select一個data source (A8)。
+        /// </summary>
+        /// <returns></returns>
+        public bool A8NeedCalibrate()
+        {
+            return _dataSourceManager.A8NeedCalibrate();
         }
 
         /// <summary>

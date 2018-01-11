@@ -27,4 +27,22 @@ namespace TwainDotNet
         {
         }
     }
+
+    public class DeviceOpenExcetion : TwainException
+    {
+        public DeviceOpenExcetion() : this(null, null)
+        {
+
+        }
+
+        public DeviceOpenExcetion(string message) : this(message, null)
+        {
+
+        }
+
+        public DeviceOpenExcetion(string message, Exception innerException) : base(message, innerException)
+        {
+
+        }
+    }
 }

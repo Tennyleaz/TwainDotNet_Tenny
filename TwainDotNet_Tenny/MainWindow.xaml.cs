@@ -193,5 +193,98 @@ namespace TwainDotNet_Tenny
             }
             catch { }
         }
+
+        private void btnPaperOn_Click(object sender, RoutedEventArgs e)
+        {
+            bool isPaperOn = false;
+            Twain twain = null;
+            try
+            {
+                twain = new Twain(new WpfWindowMessageHook(this));
+                twain.SelectSource("A8 ColorScanner PP");
+                isPaperOn = twain.IsPaperOn();
+                twain.Dispose();
+            }
+            catch (TwainException ex)
+            {
+                Console.WriteLine(ex);
+                isPaperOn = false;
+                twain?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                isPaperOn = false;
+                twain?.Dispose();
+            }
+
+            if (isPaperOn)
+            {
+                MessageBox.Show("有紙");
+            }
+            else
+            {
+                MessageBox.Show("沒紙");
+            }            
+        }
+
+        private void btnNeedCalibrate_Click(object sender, RoutedEventArgs e)
+        {
+            bool isPaperOn = false;
+            Twain twain = null;
+            try
+            {
+                twain = new Twain(new WpfWindowMessageHook(this));
+                twain.SelectSource("A8 ColorScanner PP");
+                isPaperOn = twain.A8NeedCalibrate();
+                twain.Dispose();
+            }
+            catch (TwainException ex)
+            {
+                Console.WriteLine(ex);
+                isPaperOn = false;
+                twain?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                isPaperOn = false;
+                twain?.Dispose();
+            }
+
+            if (isPaperOn)
+            {
+                MessageBox.Show("需要校正");
+            }
+            else
+            {
+                MessageBox.Show("不用校正");
+            }
+        }
+
+        private void btnCalibrate_Click(object sender, RoutedEventArgs e)
+        {
+            bool isPaperOn = false;
+            Twain twain = null;
+            try
+            {
+                twain = new Twain(new WpfWindowMessageHook(this));
+                twain.SelectSource("A8 ColorScanner PP");
+                isPaperOn = twain.CalibrateA8();
+                twain.Dispose();
+            }
+            catch (TwainException ex)
+            {
+                Console.WriteLine(ex);
+                isPaperOn = false;
+                twain?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                isPaperOn = false;
+                twain?.Dispose();
+            }
+        }
     }
 }

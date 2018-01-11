@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace TwainDotNet.TwainNative
 {
-    public enum Capabilities : short
+    public enum Capabilities : ushort
     {
         // all data sources are REQUIRED to support these capabilities
         XferCount = 0x0001,
@@ -85,14 +85,14 @@ namespace TwainDotNet.TwainNative
         Flashused = 0x1107,
         Gamma = 0x1108,
         Halftones = 0x1109,
-        Highlight = 0x110a,
+        Highlight = 0x110a,  //Lightest highlight, values lighter than this value will be set to this value
         ImageFileFormat = 0x110c,
         LampState = 0x110d,
         LightSource = 0x110e,
         Orientation = 0x1110,
         PhysicalWidth = 0x1111,
         PhysicalHeight = 0x1112,
-        Shadow = 0x1113,
+        Shadow = 0x1113,  //Darkest shadow, values darker than this value will be set to this value
         Frames = 0x1114,
         XNativeResolution = 0x1116,
         YNativeResolution = 0x1117,
@@ -158,6 +158,11 @@ namespace TwainDotNet.TwainNative
         ImageMergeHeightThreshold =   0x115d,       /* Added 2.1 */
         SupoortedExtImageInfo = 0x115e,             /* Added 2.1 */
         Audiofileformat = 0x1201,
-        Xfermech = 0x1202
+        Xfermech = 0x1202,
+
+        /// <summary>
+        /// Special value for A8 scanner calibration.
+        /// </summary>
+        A8_Calibrate = 0x9259
     }
 }

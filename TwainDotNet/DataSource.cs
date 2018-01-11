@@ -351,8 +351,113 @@ namespace TwainDotNet
                 NegotiateBufferedMode(TWSX_MEMORY);
             }
 
+            NegotiateTest();
+            NegotiateContrast(settings.Contrast);
+            NegotiateBrightness(120);
+
             // Go from twain state 4 to 5
             return Enable(settings);
+        }
+
+        private bool NegotiateTest()
+        {
+            try
+            {
+                //var cap = new Capability(Capabilities.Brightness, TwainType.Fix32, _applicationId, SourceId);
+                //int irtn = cap.GetBasicValue().Int32Value;
+                //Capability.SetCapability(Capabilities.Brightness, 100, _applicationId, SourceId);
+                //Capability.SetBasicCapability(Capabilities.Contrast, 300, TwainType.Fix32, _applicationId, SourceId);
+                //if (iRtn > 0)
+                {
+                    bool brtn = Capability.GetBoolCapability(Capabilities.Autobright, _applicationId, SourceId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// A8專用的校正，需要先select一個data source且先Open source。
+        /// </summary>
+        public bool CalibrateA8()
+        {
+            /*
+             * 進行Calibration的動作。這不是TWAIN spec裡的東西，需要廠商提供。
+             * 來自XTWainAVISION.cpp，XTWainAVISION::DoCalibration()
+             * BOOL bRtna = SetCapability(CAP_INDICATORS, FALSE, TWTY_BOOL);
+	         * BOOL bRtn = SetCapability(0x9259, TRUE, TWTY_BOOL);
+             */
+            bool bReturn = false;
+            try
+            {
+                int iReturn = Capability.SetBasicCapability(Capabilities.Indicators, 0, TwainType.Bool, _applicationId, SourceId);
+                iReturn = Capability.SetBasicCapability(Capabilities.A8_Calibrate, 1, TwainType.Bool, _applicationId, SourceId);
+                if (iReturn > 0)
+                    bReturn = true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return bReturn;
+        }
+
+        /// <summary>
+        /// A8是否需要校正，需要先select一個data source且先Open source。
+        /// </summary>
+        public bool A8NeedCalibrate()
+        {
+            //bNeed = FALSE;
+            //float fVal;
+            //BOOL bRtn = GetCapability(0x9259, fVal, MSG_GETCURRENT); ///Carpe: id 仍未確認 
+            //bNeed = (BOOL)(fVal + 0.00001);
+
+            Capability cap = new Capability(Capabilities.A8_Calibrate, TwainType.Int32, _applicationId, SourceId);
+            int iReturn = cap.GetBasicValue().Int32Value;
+            if (iReturn > 0)
+                return true;
+            else
+                return false;
+        }
+
+        private bool NegotiateContrast(int contrast)
+        {
+            try
+            {
+                Capability cap = new Capability(Capabilities.Contrast, TwainType.Fix32, _applicationId, SourceId);
+                int oldContrast = cap.GetBasicValue().Int32Value;
+                if (oldContrast != contrast)
+                {
+                    int iRtn = Capability.SetBasicCapability(Capabilities.Contrast, contrast, TwainType.Fix32, _applicationId, SourceId);
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool NegotiateBrightness(int brightness)
+        {
+            try
+            {
+                Capability cap = new Capability(Capabilities.Brightness, TwainType.Fix32, _applicationId, SourceId);
+                int oldContrast = cap.GetBasicValue().Int32Value;
+                if (oldContrast != brightness)
+                {
+                    int iRtn = Capability.SetBasicCapability(Capabilities.Brightness, brightness, TwainType.Fix32, _applicationId, SourceId);
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
 
         private bool NegotiateBufferedMode(ushort scanMode)
@@ -419,15 +524,28 @@ namespace TwainDotNet
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <exception cref="DeviceOpenExcetion">當DS被其他人占用的時候可能會擲回</exception>
+        /// <exception cref="TwainException">twain DLL沒有錯誤，但是回傳值失敗的話就會擲回</exception>
         public void OpenSource()
         {
-            var result = Twain32Native.DsmIdentity(
-                   _applicationId,
-                   IntPtr.Zero,
-                   DataGroup.Control,
-                   DataArgumentType.Identity,
-                   Message.OpenDS,
-                   SourceId);
+            TwainResult result = TwainResult.NotDSEvent;
+            try
+            {
+                result = Twain32Native.DsmIdentity(
+                       _applicationId,
+                       IntPtr.Zero,
+                       DataGroup.Control,
+                       DataArgumentType.Identity,
+                       Message.OpenDS,
+                       SourceId);
+            }
+            catch (Exception ex)
+            {
+                throw new DeviceOpenExcetion(ex.Message);
+            }
 
             if (result != TwainResult.Success)
             {
@@ -457,12 +575,19 @@ namespace TwainDotNet
 
             if (result != TwainResult.Success)
             {
+                Console.WriteLine("Enable() error! return=" + result);
                 Dispose();
                 return false;
             }
             return true;
         }
 
+        /// <summary>
+        /// Get default data source.
+        /// </summary>
+        /// <param name="applicationId"></param>
+        /// <param name="messageHook"></param>
+        /// <returns></returns>
         public static DataSource GetDefault(Identity applicationId, IWindowsMessageHook messageHook)
         {
             var defaultSourceId = new Identity();

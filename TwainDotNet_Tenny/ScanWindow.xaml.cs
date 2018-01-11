@@ -149,10 +149,11 @@ namespace TwainDotNet_Tenny
             _settings.Page.Orientation = TwainDotNet.TwainNative.Orientation.Auto;
             _settings.Area = new AreaSettings(Units.Inches, 0, 0, 3.7f, 2.1f);  // 設定掃描紙張的邊界
             _settings.AbortWhenNoPaperDetectable = true;  // 要偵測有沒有紙
+            _settings.Contrast = 300;
 
             try
             {
-                _scannerName = /*"WIA-A8 ColorScanner PP"; */"A6D Scanner";//"A8 ColorScanner PP"; //sourceList.Last()*/;
+                _scannerName = /*"WIA-A8 ColorScanner PP"; */"A8 ColorScanner PP"; //sourceList.Last()*/;
                 _twain.SelectSource(_scannerName);
                 _twain.StartScanning(_settings);  // 做open→設定各種CAPABILITY→EnableDS→等回傳圖
                 /// Once the Source is enabled via the DG_CONTROL / DAT_USERINTERFACE/ MSG_ENABLEDS operation, 
@@ -160,10 +161,16 @@ namespace TwainDotNet_Tenny
                 /// The Source, not the application, controls the transition from State 5 to State 6.
                 /// - spec pdf p.3-60
             }
+            catch (FeederEmptyException)
+            {
+                MessageBox.Show("沒有紙");
+                Close();
+            }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-            }
+                Close();
+            }            
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

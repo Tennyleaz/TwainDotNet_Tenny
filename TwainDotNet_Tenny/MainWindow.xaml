@@ -15,7 +15,10 @@
         <ComboBox Name="ManualSource" Margin="60,0,0,0" Width="150" HorizontalAlignment="Left"/>
         <Label Name="fileName" Margin="300,0,0,0"></Label>
         <Button Name="btnClear" Grid.Row="0" Width="50" HorizontalAlignment="Left" Margin="220,0,0,0" Click="btnClear_Click">Delete</Button>
-        <ProgressBar Name="progressBar" Margin="300,0,0,0" Height="20" IsIndeterminate="True" Visibility="Hidden"/>
+        <Button Name="btnPaperOn" Grid.Row="0" Width="50" HorizontalAlignment="Left" Margin="280,0,0,0" Click="btnPaperOn_Click">Paper?</Button>
+        <Button Name="btnNeedCalibrate" Grid.Row="0" Width="50" HorizontalAlignment="Left" Margin="340,0,0,0" Click="btnNeedCalibrate_Click">校正?</Button>
+        <Button Name="btnCalibrate" Grid.Row="0" Width="50" HorizontalAlignment="Left" Margin="400,0,0,0" Click="btnCalibrate_Click">校正</Button>
+        <ProgressBar Name="progressBar" Margin="340,0,0,0" Height="20" IsIndeterminate="True" Visibility="Hidden"/>
         <Image Name="MainImage" Grid.Row="1"/>
     </Grid>
 </Window>

@@ -110,6 +110,38 @@ namespace TwainDotNet
         }
 
         /// <summary>
+        /// 偵測有沒有紙，需要先select一個data source。
+        /// </summary>
+        /// <returns></returns>
+        public bool IsPaperOn()
+        {
+            DataSource.OpenSource();
+            return DataSource.PaperDetectable;
+        }
+
+        /// <summary>
+        /// A8專用的校正，需要先select一個data source。
+        /// </summary>
+        /// <returns></returns>
+        public bool CalibrateA8()
+        {
+            DataSource.OpenSource();
+            bool bReturn = DataSource.CalibrateA8();
+            return bReturn;
+        }
+
+        /// <summary>
+        /// A8是否需要校正，需要先select一個data source。
+        /// </summary>
+        /// <returns></returns>
+        public bool A8NeedCalibrate()
+        {
+            DataSource.OpenSource();
+            bool bReturn = DataSource.A8NeedCalibrate();
+            return bReturn;
+        }
+
+        /// <summary>
         /// While the application has the Source enabled, 
         /// the application is forwarding all events in its event loop to the Source 
         /// by using the DG_CONTROL / DAT_EVENT / MSG_PROCESSEVENT operation.
@@ -325,7 +357,7 @@ namespace TwainDotNet
             TwainResult result;
             try
             {
-                int i = 1;
+                int recievedBlockCount = 1;
                 do
                 {
                     pendingTransfer.Count = 0;     // the Twain source will fill this in during DsPendingTransfer                    
@@ -363,7 +395,6 @@ namespace TwainDotNet
                         break;
                     }*/
 
-                    imageInfo.ImageWidth += 50;
                     // Setup Destination Bitmap
                     Bitmap bitmap = BitmapRenderer.NewBitmapForImageInfo(imageInfo);
 
@@ -420,16 +451,24 @@ namespace TwainDotNet
                             //savePath += i.ToString() + @".bmp";
                             if (result == TwainResult.Success || result == TwainResult.XferDone)
                             {
+                                // dibArray是這次Buffer的RGB陣列
                                 byte[] dibArray = ShiftPixels(ref imageMemXfer, imageInfo.BitsPerPixel/8);
 
                                 BitmapRenderer.TransferPixels(bitmap, imageInfo, imageMemXfer);
-                                pixels_written += (imageMemXfer.BytesWritten * 8) / imageInfo.BitsPerPixel;
+                                pixels_written += (imageMemXfer.BytesWritten * 8) / imageInfo.BitsPerPixel;                                
                                 double percent_complete = (double)pixels_written / (double)total_pixels;
+
                                 if (result == TwainResult.XferDone)
                                 {
-                                    percent_complete = 1.0;
+                                    percent_complete = 1.0;                                    
+                                    // 算出空白區域的高度，裁切尾端部分
+                                    int blankHeight = GetCropHeight(bitmap);
+                                    if (blankHeight > 0 && blankHeight < imageInfo.ImageLength)
+                                    {
+                                        bitmap = cropImage(bitmap, blankHeight);
+                                    }
                                 }
-                                
+
                                 // fire the transfer event
                                 TransferImageEventArgs args = new TransferImageEventArgs(bitmap, result != TwainResult.XferDone, (float)percent_complete);                                
                                 TransferImage(this, args);                                
@@ -438,7 +477,7 @@ namespace TwainDotNet
                                     result = TwainResult.XferDone;
                                 }
                             }
-                            i++;
+                            recievedBlockCount++;
 
                         } while (result == TwainResult.Success);
 
@@ -607,6 +646,43 @@ namespace TwainDotNet
                 return newArray;
             else
                 return managedArray;
+        }
+
+        /// <summary>
+        /// 算出圖片尾端黑色+(70,70,70)灰色的總高度
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns></returns>
+        private int GetCropHeight(Bitmap bmp)
+        {
+            Color gray70 = Color.FromArgb(255, 70, 70, 70);
+            for (int height = bmp.Height - 1; height >= 0; height--)
+            {
+                for (int width = bmp.Width - 1; width >= 0; width--)
+                {
+                    // 取得像素
+                    Color clr = bmp.GetPixel(width, height);
+                    if (clr.ToArgb() != Color.Black.ToArgb() && clr.ToArgb() != gray70.ToArgb())
+                    {
+                        return bmp.Height - height -1;
+                    }
+                }
+            }
+            return bmp.Height;
+        }
+
+        /// <summary>
+        /// 切掉圖片的尾端指定高度
+        /// </summary>
+        private static Bitmap cropImage(Bitmap img, int redundantHeight)
+        {
+            // https://stackoverflow.com/questions/734930/how-to-crop-an-image-using-c            
+            Rectangle cropArea = new Rectangle(0, 0, img.Width, img.Height - redundantHeight);
+            Bitmap newBitmap = new Bitmap(cropArea.Width, cropArea.Height);
+            Graphics g = Graphics.FromImage(newBitmap);
+            g.DrawImage(img, -cropArea.X, -cropArea.Y);
+            img.Dispose();
+            return newBitmap;
         }
 
         protected void CloseDsAndCompleteScanning(Exception exception)

@@ -41,8 +41,8 @@ namespace TwainDotNet
         {
         }
 
-        public TwainResult? ReturnCode { get; private set; }
+        public TwainResult? ReturnCode { get; protected set; }
 
-        public ConditionCode? ConditionCode { get; private set; }
+        public ConditionCode? ConditionCode { get; protected set; }
     }
 }
