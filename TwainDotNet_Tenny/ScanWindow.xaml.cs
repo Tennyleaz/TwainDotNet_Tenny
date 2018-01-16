@@ -131,7 +131,7 @@ namespace TwainDotNet_Tenny
             imageCount = 0;
             _settings = new ScanSettings
             {
-                UseDocumentFeeder = false,
+                UseDocumentFeeder = true,
                 ShowTwainUI = false,
                 ShowProgressIndicatorUI = false,
                 UseDuplex = false,
@@ -146,7 +146,7 @@ namespace TwainDotNet_Tenny
             };
             _settings.Page = new PageSettings();  // page參數好像沒什麼用
             _settings.Page.Size = PageType.None;
-            _settings.Page.Orientation = TwainDotNet.TwainNative.Orientation.Auto;
+            //_settings.Page.Orientation = TwainDotNet.TwainNative.Orientation.Auto;
             _settings.Area = new AreaSettings(Units.Inches, 0, 0, 3.7f, 2.1f);  // 設定掃描紙張的邊界
             _settings.AbortWhenNoPaperDetectable = true;  // 要偵測有沒有紙
             _settings.Contrast = 300;

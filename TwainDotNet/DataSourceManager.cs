@@ -62,6 +62,7 @@ namespace TwainDotNet
             }
             else
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "Error initialising DSM: " + result.ToString());
                 throw new TwainException("Error initialising DSM: " + result, result);
             }
         }
@@ -347,6 +348,7 @@ namespace TwainDotNet
             // see http://www.twain.org/wp-content/uploads/2017/03/TWAIN-2.4-Specification.pdf
             // page 4-20
             Console.WriteLine("TransferPicturesIncremental...");
+            Logger.WriteLog(LOG_LEVEL.LL_NORMAL_LOG, "TransferPicturesIncremental...");
 
             if (DataSource.SourceId.Id == 0)
             {
@@ -429,6 +431,7 @@ namespace TwainDotNet
 
                         if (imageMemXfer.Memory.TheMem == IntPtr.Zero)
                         {
+                            Logger.WriteLog(LOG_LEVEL.LL_SERIOUS_ERROR, "error allocating buffer for memory transfer");
                             throw new TwainException("error allocating buffer for memory transfer");
                         }
                         
@@ -518,6 +521,7 @@ namespace TwainDotNet
                     DataArgumentType.PendingXfers,
                     Message.Reset,
                     pendingTransfer);
+                Logger.WriteLog(LOG_LEVEL.LL_NORMAL_LOG, "TransferPicturesIncremental...done.");
             }
         }
 

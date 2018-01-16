@@ -43,7 +43,9 @@ namespace TwainDotNet
             {
                 var conditionCode = GetStatus();
 
-                log.Debug(string.Format("Failed to get capability:{0} reason: {1}", 
+                /*log.Debug(string.Format("Failed to get capability:{0} reason: {1}", 
+                    _capability, conditionCode));*/
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, string.Format("Failed to get capability:{0} reason: {1}",
                     _capability, conditionCode));
 
                 return new BasicCapabilityResult()
@@ -73,8 +75,10 @@ namespace TwainDotNet
 
         protected void SetValue<T>(T value)
         {
-            log.Debug(string.Format("Attempting to set capabilities:{0}, value:{1}, type:{1}",
-                _capability, value, _twainType));
+            /*log.Debug(string.Format("Attempting to set capabilities:{0}, value:{1}, type:{1}",
+                _capability, value, _twainType));*/
+            Logger.WriteLog(LOG_LEVEL.LL_NORMAL_LOG, string.Format("Attempting to set capabilities:{0}, value:{1}, type:{2}",
+                _capability, value, _twainType.ToString()));
 
             int rawValue = Convert.ToInt32(value);
             var oneValue = new CapabilityOneValue(_twainType, rawValue);
@@ -90,21 +94,21 @@ namespace TwainDotNet
 
             if (result != TwainResult.Success)
             {
-                log.Debug(string.Format("Failed to set capabilities:{0}, value:{1}, type:{1}, result:{2}",
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, string.Format("Failed to set capabilities:{0}, value:{1}, type:{2}, result:{3}",
                     _capability, value, _twainType, result));
 
                 if (result == TwainResult.Failure)
                 {
                     var conditionCode = GetStatus();
 
-                    log.Error(string.Format("Failed to set capabilites:{0} reason: {1}",
+                    Logger.WriteLog(LOG_LEVEL.LL_SERIOUS_ERROR, string.Format("Failed to set capabilites:{0} reason: {1}",
                         _capability, conditionCode));
 
                     throw new TwainException("Failed to set capability.", result, conditionCode);
                 }
                 else if (result == TwainResult.CheckStatus)
                 {
-                    log.Debug("Value changed but not to requested value");
+                    Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "Value changed but not to requested value");
                 }
                 else
                 {
@@ -113,7 +117,7 @@ namespace TwainDotNet
             }
             else
             {
-                log.Debug("Set capabilities successfully");
+                Logger.WriteLog(LOG_LEVEL.LL_NORMAL_LOG, "Set capabilities:" + _capability + " successfully");
             }
         }
 

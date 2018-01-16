@@ -39,6 +39,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set TransferCount");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -55,6 +56,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set UseDocumentFeeder");
                 // Do nothing if the data source does not support the requested capability
             }
 
@@ -67,6 +69,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set UseAutoFeeder");
                 // Do nothing if the data source does not support the requested capability
             }
 
@@ -79,6 +82,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set UseAutoScanCache");
                 // Do nothing if the data source does not support the requested capability
             }
 
@@ -157,6 +161,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set IPixelType");
                 // Do nothing if the data source does not support the requested capability
             }
 
@@ -170,6 +175,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set BitDepth");
                 // Do nothing if the data source does not support the requested capability
             }
 
@@ -188,6 +194,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Resolution");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -203,6 +210,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set UseDuplex");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -220,6 +228,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Orientation");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -240,6 +249,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Page.Size");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -259,6 +269,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Automaticrotate");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -278,6 +289,7 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Automaticborderdetection");
                 // Do nothing if the data source does not support the requested capability
             }
         }
@@ -297,12 +309,13 @@ namespace TwainDotNet
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set ProgressIndicator");
                 // Do nothing if the data source does not support the requested capability
             }
         }
 
         /// <summary>
-        /// 先open data source，然後才做Capability Negotiation
+        /// 先open data source進入state 4，然後才做Capability Negotiation
         /// </summary>
         /// <param name="settings"></param>
         /// <param name="useMemoryMode"></param>
@@ -312,9 +325,10 @@ namespace TwainDotNet
             OpenSource();
 
             if (settings.AbortWhenNoPaperDetectable && !PaperDetectable)
-                throw new FeederEmptyException();
+                throw new FeederEmptyException("Feeder is empty.");
 
-            // This is twain state 4
+            // This is twain state 4,
+            // the only state wherein capabilities can be set or reset.
             // Set whether or not to show progress window
             NegotiateProgressIndicator(settings);
             NegotiateTransferCount(settings);
@@ -394,10 +408,12 @@ namespace TwainDotNet
             bool bReturn = false;
             try
             {
-                int iReturn = Capability.SetBasicCapability(Capabilities.Indicators, 0, TwainType.Bool, _applicationId, SourceId);
-                iReturn = Capability.SetBasicCapability(Capabilities.A8_Calibrate, 1, TwainType.Bool, _applicationId, SourceId);
+                Capability.SetCapability(Capabilities.Indicators, false, _applicationId, SourceId);
+                //int iReturn = Capability.SetBasicCapability(Capabilities.Indicators, 0, TwainType.Bool, _applicationId, SourceId);
+                Capability.SetCapability(Capabilities.A8_Calibrate, true, _applicationId, SourceId);
+                /*int iReturn = Capability.SetBasicCapability(Capabilities.A8_Calibrate, 1, TwainType.Bool, _applicationId, SourceId);
                 if (iReturn > 0)
-                    bReturn = true;
+                    bReturn = true;*/
             }
             catch (Exception ex)
             {
@@ -437,6 +453,7 @@ namespace TwainDotNet
             }
             catch (Exception ex)
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Contrast");
                 return false;
             }
             return true;
@@ -455,6 +472,7 @@ namespace TwainDotNet
             }
             catch (Exception ex)
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Brightness");
                 return false;
             }
             return true;
@@ -469,6 +487,7 @@ namespace TwainDotNet
             }
             catch (Exception ex)
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set BufferedMode");
                 // Do nothing if the data source does not support the requested capability
             }
             return true;
@@ -485,14 +504,15 @@ namespace TwainDotNet
 
             try
             {
-                var cap = new Capability(Capabilities.IUnits, TwainType.Int16, _applicationId, SourceId);
+                var cap = new Capability(Capabilities.IUnits, TwainType.UInt16, _applicationId, SourceId);
                 if ((Units)cap.GetBasicValue().Int16Value != area.Units)
                 {
-                    Capability.SetCapability(Capabilities.IUnits, (short)area.Units, _applicationId, SourceId);
+                    Capability.SetBasicCapability(Capabilities.IUnits, (int)area.Units, TwainType.UInt16, _applicationId, SourceId);
                 }
             }
             catch
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set Units");
                 // Do nothing if the data source does not support the requested capability
             }
 
@@ -517,6 +537,7 @@ namespace TwainDotNet
 
             if (result != TwainResult.Success)
             {
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "DataSource failed to set ImageLayout");
                 // note: 我這裡總是失敗，但是實際上image layout是可以設定成功的，由掃描結果不同來推測。
                 //throw new TwainException("DsImageLayout.GetDefault error", result);
             }
@@ -525,10 +546,9 @@ namespace TwainDotNet
         }
 
         /// <summary>
-        /// 
+        /// 打開DS，進入State 4以溝通Capabilities
         /// </summary>
-        /// <exception cref="DeviceOpenExcetion">當DS被其他人占用的時候可能會擲回</exception>
-        /// <exception cref="TwainException">twain DLL沒有錯誤，但是回傳值失敗的話就會擲回</exception>
+        /// <exception cref="DeviceOpenExcetion">當DS被其他人占用的時候可能會擲回，或twain DLL沒有錯誤，但是回傳值失敗的話就會擲回</exception>
         public void OpenSource()
         {
             TwainResult result = TwainResult.NotDSEvent;
@@ -549,8 +569,9 @@ namespace TwainDotNet
 
             if (result != TwainResult.Success)
             {
-                throw new TwainException("Error opening data source", result);
+                throw new DeviceOpenExcetion("Error opening data source", result);
             }
+            Logger.WriteLog(LOG_LEVEL.LL_NORMAL_LOG, string.Format("DataSource \"{0}\" successfully opened.", this.SourceId.ProductName));
         }
 
         /// <summary>
@@ -576,6 +597,7 @@ namespace TwainDotNet
             if (result != TwainResult.Success)
             {
                 Console.WriteLine("Enable() error! return=" + result);
+                Logger.WriteLog(LOG_LEVEL.LL_SUB_FUNC, "Enable() error! return=" + result);
                 Dispose();
                 return false;
             }
@@ -603,7 +625,8 @@ namespace TwainDotNet
 
             if (result != TwainResult.Success)
             {
-                var status = DataSourceManager.GetConditionCode(applicationId, null);
+                ConditionCode status = DataSourceManager.GetConditionCode(applicationId, null);
+                Logger.WriteLog(LOG_LEVEL.LL_SERIOUS_ERROR, "Error getting information about the default source: " + result);
                 throw new TwainException("Error getting information about the default source: " + result, result, status);
             }
 

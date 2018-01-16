@@ -40,6 +40,11 @@ namespace TwainDotNet
 
         }
 
+        public DeviceOpenExcetion(string message, TwainNative.TwainResult result) : this(message, null)
+        {
+            base.ReturnCode = result;
+        }
+
         public DeviceOpenExcetion(string message, Exception innerException) : base(message, innerException)
         {
 

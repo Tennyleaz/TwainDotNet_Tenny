@@ -61,6 +61,7 @@ namespace TwainDotNet
         /// Selects a source based on the product name string.
         /// </summary>
         /// <param name="sourceName">The source product name.</param>
+        /// <exception cref="TwainException">Thrown when DataSource.GetSource() cannot enumerate next source.</exception>
         public void SelectSource(string sourceName)
         {
             var source = DataSource.GetSource(
